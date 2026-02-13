@@ -17,30 +17,30 @@ public class Point {
         this.y = y;
     }
 
-    public void affiche() {
+    public void display() {
         System.out.println(name + "(" + x + ", " + y + ")");
     }
 
-    public void translation(double dx, double dy) {
+    public void translate(double dx, double dy) {
         this.x += dx;
         this.y += dy;
     }
 
-    public Point milieu(Point autre) {
-        double mx = (this.x + autre.x) / 2;
-        double my = (this.y + autre.y) / 2;
+    public Point midpoint(Point other) {
+        double mx = (this.x + other.x) / 2;
+        double my = (this.y + other.y) / 2;
         return new Point('M', mx, my);
     }
 
-    public Point symetrique() {
+    public Point symmetric() {
         return new Point('S', -this.x, -this.y);
     }
 
-    public double distance(Point autre) {
-        return Math.sqrt(Math.pow(autre.x - this.x, 2) + Math.pow(autre.y - this.y, 2));
+    public double distance(Point other) {
+        return Math.sqrt(Math.pow(other.x - this.x, 2) + Math.pow(other.y - this.y, 2));
     }
 
-    public boolean comparer(Point autre) {
-        return (this.x == autre.x && this.y == autre.y);
+    public boolean compare(Point other) {
+        return (this.x == other.x && this.y == other.y);
     }
 }
