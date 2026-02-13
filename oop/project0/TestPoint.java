@@ -20,5 +20,27 @@ public class TestPoint {
         s.affiche();
 
         System.out.println(p1.comparer(p2));
+
+        Cercle c1 = new Cercle();
+        Cercle c2 = new Cercle(5, p1);
+        c1.Display();
+        c2.Display();
+        c1.setRayon(4);
+        double r1 = c1.getRayon();
+        System.out.println(r1);
+        Point p = c1.getCenter();
+        p.affiche();
+        System.out.println();
+        double surface = c1.surface();
+        System.out.println("Surface of c1 = "+ surface);
+        double per = c1.perimetre();
+        System.out.println("Preimetre of c1 = "+ per);
+
+        System.out.println(c1.comparer(c2));
+
+        c1.agrandir(3);
+        c1.Display();
+
+
     }
 }
