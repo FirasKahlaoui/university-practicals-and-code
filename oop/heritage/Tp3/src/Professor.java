@@ -16,8 +16,7 @@ public class Professor extends Employe {
 
     @Override
     public String toString() {
-        return "Professor [speciality=" + speciality + ", salary=" + salary + ", Id=" + getId() + ", lastname=" + getLastname()
-                + ", firstname=" + getFirstname() + "]";
+        return super.toString() + "Professor [speciality=" + speciality + "]";
     }
     
 }
