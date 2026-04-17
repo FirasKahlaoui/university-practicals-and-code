@@ -13,7 +13,7 @@ int main()
 
     p1 = p2;
 
-    cout << "****** Aprés l'affectation ******" << endl;
+    cout << "****** Apres l'affectation ******" << endl;
     p1.afficher();
 
     return 0;
