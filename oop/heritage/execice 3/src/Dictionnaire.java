@@ -1,5 +1,3 @@
-package EX3;
-
 public class Dictionnaire extends Document{
 	private String langue;
 	private int nbArticles;

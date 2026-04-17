@@ -1,5 +1,3 @@
-package EX3;
-
 public class Document {
 	private int numEnregistrement;
     private String titre;

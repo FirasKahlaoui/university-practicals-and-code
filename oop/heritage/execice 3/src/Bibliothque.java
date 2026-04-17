@@ -1,4 +1,3 @@
-package EX3;
 public class Bibliothque {
     public static void main(String[] args) {
 
