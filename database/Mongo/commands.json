@@ -1,0 +1,45 @@
+use isidb_2026;
+db.blog.insert({"name":"tutorials point"})
+db.createCollection("mycollection")
+db.mycollection.drop()
+
+db.blog.insert([
+{
+title: 'MongoDB Overview',
+description: 'MongoDB is no sql database',
+by: 'tutorials point',
+url: 'http://www.tutorialspoint.com',
+tags: ['mongodb', 'database', 'NoSQL'],
+likes: 100
+},
+{
+title: 'NoSQL Database',
+description: "NoSQL database doesn't have tables",
+by: 'tutorials point',
+url: 'http://www.tutorialspoint.com',
+tags: ['mongodb', 'database', 'NoSQL'],
+likes: 20,
+comments: [
+{
+user:'user1',
+message: 'My first comment',
+dateCreated: new Date(2021,11,10,2,35),
+like: 0
+}
+]
+}
+])
+
+db.blog.find({"by":"tutorials point"}).pretty()
+
+db.blog.find({$and:[{"by":"tutorials point"},{"title": "MongoDB Overview"}]}).pretty()
+
+db.blog.find({$or:[{"by":"tutorials point"},{"title": "MongoDB Overview"}]}).pretty()
+
+db.blog.find({"likes": {$gt:10}, $or: [{"by": "tutorials point"}, {"title": "MongoDB Overview"}]}).pretty()
+
+db.blog.update({'title':'MongoDB Overview'},{$set:{'title':'New MongoDB Tutorial'}},{multi:true})
+
+db.blog.find({},{"title":1,_id:0}).sort({"title":-1})
+
+db.blog.remove({'title':'New MongoDB Tutorial'})
