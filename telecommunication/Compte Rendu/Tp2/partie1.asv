@@ -1,0 +1,367 @@
+clear all;
+clc;
+
+%% ── CONSTANTES GLOBALES ──────────────────────────────────────────────────
+f1  = 1000;     % Fréquence signal Gauche (Hz)
+f2  = 3000;     % Fréquence signal Droite (Hz)
+f3  = 38000;    % Fréquence porteuse DSB-SC (Hz)
+f4  = 19000;    % Fréquence pilote (Hz)
+fc  = 100000;   % Fréquence porteuse FM (Hz)
+kf  = 500000;   % Déviation de fréquence FM
+Ap  = 0.1;      % Amplitude du signal pilote
+duration = 0.005;
+
+
+%% ════════════════════════════════════════════════════════════════════════
+%% PARTIE 1 : MODULATION STÉRÉOPHONIQUE
+%% ════════════════════════════════════════════════════════════════════════
+
+%% 1. Génération des signaux audio
+fs = 100 * f2;
+T  = 0 : 1/fs : duration;
+G  = cos(2*pi*f1*T);
+D  = cos(2*pi*f2*T);
+
+% 1. Tracé des signaux G et D (Temporel)
+figure(1)
+subplot(2,1,1)
+plot(T, G, T, D, 'LineWidth', 1)
+xlabel('Temps (s)');  ylabel('Amplitude')
+title('Signaux Stéréophonie - Domaine Temporel')
+grid on
+legend('Signal Gauche (1kHz)', 'Signal Droite (3kHz)')
+
+% 2. Spectre FFT des signaux G et D (Fréquentiel)
+L         = length(G);
+freq_axis = (0:L-1) * (fs/L);
+mask      = freq_axis <= 40000;
+TFG = abs(fft(G)/L);
+TFD = abs(fft(D)/L);
+
+subplot(2,1,2)
+plot(freq_axis(mask), TFG(mask), freq_axis(mask), TFD(mask), 'LineWidth', 1.5)
+xlabel('Fréquence (Hz)');  ylabel('Amplitude')
+title('Signaux Stéréophonie - Domaine Fréquenciel')
+grid on
+
+
+%% 2. Construction des signaux stéréo
+S = G + D;
+d = G - D;
+
+% 1. Tracé des signaux S et d (Temporel)
+figure(2)
+subplot(2,1,1)
+plot(T, S, T, d, 'LineWidth', 1)
+xlabel('Temps (s)');  ylabel('Amplitude')
+title('Signaux Stéréophonie - Domaine Temporel')
+grid on
+legend('Signal S (G+D)', 'Signal d (G-D)')
+
+% 2. Spectre FFT des signaux S et d (Fréquentiel)
+TFS = abs(fft(S)/L);
+TFd = abs(fft(d)/L);
+
+subplot(2,1,2)
+plot(freq_axis(mask), TFS(mask), freq_axis(mask), TFd(mask), 'LineWidth', 1.5)
+xlabel('Fréquence (Hz)');  ylabel('Amplitude')
+title('Signaux Stéréophonie - Domaine Fréquenciel')
+grid on
+
+
+%% 3. Modulation du signal G-D
+fs = 10 * f3;
+T  = 0 : 1/fs : duration;
+G  = cos(2*pi*f1*T);
+D  = cos(2*pi*f2*T);
+x3 = (G-D) .* cos(2*pi*f3*T);
+
+% 1. Tracé de x3(t) (Temporel)
+figure(3)
+subplot(2,1,1)
+plot(T, x3, 'LineWidth', 1)
+xlabel('Temps (s)');  ylabel('Amplitude')
+title('Signal G-D modulé - Domaine Temporel')
+grid on
+legend('Signal (G-D) modulé')
+
+% 2. Spectre FFT du signal (G-D) modulé (Fréquentiel)
+L         = length(G);
+freq_axis = (0:L-1) * (fs/L);
+mask      = freq_axis <= 48000;
+TFx3      = abs(fft(x3)/L);
+
+subplot(2,1,2)
+plot(freq_axis(mask), TFx3(mask), 'LineWidth', 1.5)
+xlabel('Fréquence (Hz)');  ylabel('Amplitude')
+title('Signaux (G-D) modulé - Domaine Fréquenciel')
+grid on
+
+
+%% 4. Ajout du signal pilote
+x4 = Ap * cos(2*pi*f4*T);   % fs et T identiques à la section 3
+
+% 1. Tracé du signal pilote (Temporel)
+figure(4)
+subplot(2,1,1)
+plot(T, x4, 'LineWidth', 1)
+xlabel('Temps (s)');  ylabel('Amplitude')
+title('Signal pilote - Domaine Temporel')
+grid on
+legend('Signal pilote')
+
+% 2. Spectre FFT du signal pilote (Fréquentiel)
+TFx4 = abs(fft(x4)/L);
+
+subplot(2,1,2)
+plot(freq_axis(mask), TFx4(mask), 'LineWidth', 1.5)
+xlabel('Fréquence (Hz)');  ylabel('Amplitude')
+title('Signaux pilote - Domaine Fréquenciel')
+grid on
+
+
+%% 5. Construction du multiplex x(t) = S(t) + x3(t) + x4(t)
+fs = 100 * f3;
+T  = 0 : 1/fs : 0.002;     % durée réduite pour lisibilité
+G  = cos(2*pi*f1*T);
+D  = cos(2*pi*f2*T);
+S  = G + D;
+x3 = (G-D) .* cos(2*pi*f3*T);
+x4 = Ap * cos(2*pi*f4*T);
+x  = S + x3 + x4;
+
+% 1. Tracé de x(t) (Temporel)
+figure(5)
+subplot(2,1,1)
+plot(T, x, 'LineWidth', 1)
+xlabel('Temps (s)');  ylabel('Amplitude')
+title('Signal x(t) - Domaine Temporel')
+grid on
+legend('Signal x(t)')
+
+% 2. Spectre FFT du multiplex (Fréquentiel)
+L         = length(G);
+freq_axis = (0:L-1) * (fs/L);
+mask      = freq_axis <= 48000;
+TFx       = abs(fft(x)/L);
+
+subplot(2,1,2)
+plot(freq_axis(mask), TFx(mask), 'LineWidth', 1.5)
+xlabel('Fréquence (Hz)');  ylabel('Amplitude')
+title('Signal x(t) - Domaine Fréquenciel')
+grid on
+
+
+%% 6. Modulation FM
+%% s(t) = cos(2π·fc·t + kf·∫x(t)dt), avec fc = 100 kHz
+
+% 1. Implémentation de la modulation FM
+fs = 1000 * f3;
+T  = 0 : 1/fs : duration;
+G  = cos(2*pi*f1*T);
+D  = cos(2*pi*f2*T);
+S  = G + D;
+x3 = (G-D) .* cos(2*pi*f3*T);
+x4 = Ap * cos(2*pi*f4*T);
+x  = S + x3 + x4;
+
+integral_x = cumtrapz(T, x);
+s = cos(2*pi*fc*T + kf*integral_x);
+
+% 2. Tracé de s(t) (Temporel)
+figure(6)
+subplot(2,1,1)
+plot(T, s, 'LineWidth', 1)
+xlabel('Temps (s)');  ylabel('Amplitude')
+title('Signal s(t) - Domaine Temporel')
+grid on
+legend('Signal s(t)')
+
+% 3. Spectre de s(t) (Fréquentiel)
+L         = length(G);
+freq_axis = (0:L-1) * (fs/L);
+mask      = freq_axis <= 500000;
+TFs       = abs(fft(s)/L);
+
+subplot(2,1,2)
+plot(freq_axis(mask), TFs(mask), 'LineWidth', 1.5)
+xlabel('Fréquence (Hz)');  ylabel('Amplitude')
+title('Signal s(t) - Domaine Fréquenciel')
+grid on
+
+
+%% ════════════════════════════════════════════════════════════════════════
+%% PARTIE 2 : DÉMODULATION STÉRÉOPHONIQUE
+%% ════════════════════════════════════════════════════════════════════════
+
+%% 1. Démodulation FM (Discriminateur de phase)
+
+% 1. Démoduler le signal FM pour récupérer x(t)
+analytic_s = hilbert(s);
+inst_phase = unwrap(angle(analytic_s));
+inst_omega = diff(inst_phase) * fs;
+x_demod    = (inst_omega - 2*pi*fc) / kf;
+T_demod    = T(1:end-1);
+
+% 2. Comparer avec le signal multiplex original
+L1    = length(x);
+TFx   = abs(fft(x) / L1);
+freq1 = (0:L1-1) * (fs / L1);
+
+L2      = length(x_demod);
+TFx_dem = abs(fft(x_demod) / L2);
+freq2   = (0:L2-1) * (fs / L2);
+
+mask1 = freq1 <= 200000;
+mask2 = freq2 <= 200000;
+
+figure(7)
+subplot(2,1,1)
+plot(T, x, 'LineWidth', 1.5, 'DisplayName', 'x(t) original')
+hold on
+plot(T_demod, x_demod, 'LineWidth', 1.2, 'DisplayName', 'x(t) démodulé')
+hold off
+xlabel('Temps (s)');  ylabel('Amplitude')
+title('Comparaison : x(t) original vs démodulé')
+grid on
+legend('Location', 'best')
+
+subplot(2,1,2)
+plot(freq1(mask1), TFx(mask1), 'LineWidth', 1.5, 'DisplayName', 'X(f) original')
+hold on
+plot(freq2(mask2), TFx_dem(mask2), 'LineWidth', 1.2, 'DisplayName', 'X(f) démodulé')
+hold off
+xlabel('Fréquence (Hz)');  ylabel('Amplitude')
+title('Comparaison spectrale : X(f) original vs démodulé')
+grid on
+legend('Location', 'best')
+
+
+%% 2. Extraction des composantes
+
+%% ── Sous-échantillonnage de x_demod ────────────────────────────────────
+% fs = 38 MHz est trop élevé pour filtrer des composantes < 50 kHz
+% On réduit à fs_down = 200 kHz (> 2 × 38 kHz, règle de Nyquist respectée)
+fs_down      = 400000;
+decim_factor = round(fs / fs_down);          % = 95
+x_down       = resample(x_demod, 1, decim_factor);
+T_down       = T_demod(1:decim_factor:end);
+n_min        = min(length(x_down), length(T_down));
+x_down       = x_down(1:n_min);
+T_down       = T_down(1:n_min);
+
+% Fonction utilitaire : spectre + axe fréquentiel
+get_spectrum = @(sig, f_s) deal(abs(fft(sig)/length(sig)), ...
+                                (0:length(sig)-1) * (f_s/length(sig)));
+
+% 1. Extraire G+D avec un filtre passe-bas
+lpf = designfilt('lowpassfir', ...
+    'PassbandFrequency',   6000, ...
+    'StopbandFrequency',   9000, ...
+    'PassbandRipple',       0.1, ...
+    'StopbandAttenuation',   80, ...
+    'SampleRate',         fs_down);
+GpD_extracted = filtfilt(lpf, x_down);
+GpD_ref       = G + D;
+
+% 2. Extraire G-D avec un filtre passe-bande
+bpf_GmD = designfilt('bandpassfir', ...
+    'StopbandFrequency1', 32000, ...
+    'PassbandFrequency1', 35000, ...
+    'PassbandFrequency2', 41000, ...
+    'StopbandFrequency2', 44000, ...
+    'StopbandAttenuation1', 80, ...    % dB — atténuation hors-bande
+    'PassbandRipple',        0.1, ...  % dB — ondulation dans la bande
+    'StopbandAttenuation2', 80, ...
+    'SampleRate',          fs_down);
+
+GmD_extracted = filtfilt(bpf_GmD, x_down);
+GmD_ref       = (G - D) .* cos(2*pi*f3*T);
+
+% 3. Extraire le pilote 19 kHz
+bpf_pilot = designfilt('bandpassfir', ...
+    'StopbandFrequency1', 17000, ...
+    'PassbandFrequency1', 18500, ...
+    'PassbandFrequency2', 19500, ...
+    'StopbandFrequency2', 21000, ...
+    'SampleRate',          fs_down);
+
+pilot_extracted = filtfilt(bpf_pilot, x_down);
+pilot_ref       = Ap * cos(2*pi*f4*T);
+
+% Calcul des spectres (signaux extraits à fs_down, refs à fs)
+[TF_GpD_ext,  F1] = get_spectrum(GpD_extracted,  fs_down);
+[TF_GpD_ref,  ~ ] = get_spectrum(GpD_ref,         fs);
+[TF_GmD_ext,  F2] = get_spectrum(GmD_extracted,  fs_down);
+[TF_GmD_ref,  ~ ] = get_spectrum(GmD_ref,         fs);
+[TF_pilot_ext,F3] = get_spectrum(pilot_extracted, fs_down);
+[TF_pilot_ref,~ ] = get_spectrum(pilot_ref,        fs);
+F_ref = (0:length(T)-1) * (fs/length(T));
+
+cap = [15000, 60000, 30000];
+
+% Figure 8 — G+D
+figure(8)
+subplot(2,1,1)
+mask_e = F1 <= cap(1);   mask_r = F_ref <= cap(1);
+plot(F_ref(mask_r), TF_GpD_ref(mask_r), 'b',   'LineWidth', 1.5, 'DisplayName', 'G+D original')
+hold on
+plot(F1(mask_e),    TF_GpD_ext(mask_e),  'r--', 'LineWidth', 1.2, 'DisplayName', 'G+D extrait (LPF)')
+hold off
+xlabel('Fréquence (Hz)');  ylabel('Amplitude')
+title('G+D — Comparaison Spectrale')
+grid on;  legend('Location', 'best')
+
+subplot(2,1,2)
+plot(T,      GpD_ref,       'b',   'LineWidth', 1.5, 'DisplayName', 'G+D original')
+hold on
+plot(T_down, GpD_extracted, 'r--', 'LineWidth', 1.2, 'DisplayName', 'G+D extrait (LPF)')
+hold off
+xlabel('Temps (s)');  ylabel('Amplitude')
+title('G+D — Comparaison Temporelle')
+grid on;  legend('Location', 'best')
+sgtitle('Extraction de G+D par Filtre Passe-Bas', 'FontSize', 13)
+
+% Figure 9 — G-D
+figure(9)
+subplot(2,1,1)
+mask_e = F2 <= cap(2);   mask_r = F_ref <= cap(2);
+plot(F_ref(mask_r), TF_GmD_ref(mask_r), 'b',   'LineWidth', 1.5, 'DisplayName', 'G-D original')
+hold on
+plot(F2(mask_e),    TF_GmD_ext(mask_e),  'r--', 'LineWidth', 1.2, 'DisplayName', 'G-D extrait (BPF 38 kHz)')
+hold off
+xlabel('Fréquence (Hz)');  ylabel('Amplitude')
+title('G-D — Comparaison Spectrale')
+grid on;  legend('Location', 'best')
+
+subplot(2,1,2)
+plot(T,      GmD_ref,       'b',   'LineWidth', 1.5, 'DisplayName', 'G-D original')
+hold on
+plot(T_down, GmD_extracted, 'r--', 'LineWidth', 1.2, 'DisplayName', 'G-D extrait (BPF 38 kHz)')
+hold off
+xlabel('Temps (s)');  ylabel('Amplitude')
+title('G-D — Comparaison Temporelle')
+grid on;  legend('Location', 'best')
+sgtitle('Extraction de G-D par Filtre Passe-Bande (38 kHz)', 'FontSize', 13)
+
+% Figure 10 — Pilote 19 kHz
+figure(10)
+subplot(2,1,1)
+mask_e = F3 <= cap(3);   mask_r = F_ref <= cap(3);
+plot(F_ref(mask_r), TF_pilot_ref(mask_r), 'b',   'LineWidth', 1.5, 'DisplayName', 'Pilote original')
+hold on
+plot(F3(mask_e),    TF_pilot_ext(mask_e),  'r--', 'LineWidth', 1.2, 'DisplayName', 'Pilote extrait (BPF 19 kHz)')
+hold off
+xlabel('Fréquence (Hz)');  ylabel('Amplitude')
+title('Pilote 19 kHz — Comparaison Spectrale')
+grid on;  legend('Location', 'best')
+
+subplot(2,1,2)
+plot(T,      pilot_ref,       'b',   'LineWidth', 1.5, 'DisplayName', 'Pilote original')
+hold on
+plot(T_down, pilot_extracted, 'r--', 'LineWidth', 1.2, 'DisplayName', 'Pilote extrait (BPF 19 kHz)')
+hold off
+xlabel('Temps (s)');  ylabel('Amplitude')
+title('Pilote 19 kHz — Comparaison Temporelle')
+grid on;  legend('Location', 'best')
+sgtitle('Extraction du Signal Pilote (19 kHz)', 'FontSize', 13)
